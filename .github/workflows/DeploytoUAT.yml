@@ -68,7 +68,7 @@ jobs:
       - name: data-factory-deploy
         uses: Azure/data-factory-deploy-action@v1.2.0
         with:
-          resourceGroupName: rg_ci_cd_new_uat   # (6) your target ADF resource group name
+          resourceGroupName: rg_ci_cd_new_uat    # (6) your target ADF resource group name
           dataFactoryName: df-new-uat    # (7) your target ADF name
           armTemplateFile: ARMTemplateForFactory.json   # (8) ARM template file name ARMTemplateForFactory.json
           armTemplateParametersFile: ARMTemplateParametersForFactory.json    # (9) ARM template parameters file name ARMTemplateParametersForFactory.json
