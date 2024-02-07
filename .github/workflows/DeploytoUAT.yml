@@ -62,7 +62,7 @@ jobs:
       - name: Login via Az module
         uses: azure/login@v1
         with:
-          creds: '${{ secrets.azure_service_principal_connect }}'
+          creds: '${{ secrets.CONNECT_TO_UAT }}'
           enable-AzPSSession: true
 
       - name: data-factory-deploy
