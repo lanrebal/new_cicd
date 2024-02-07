@@ -1,5 +1,5 @@
 {
-	"name": "wait-10s",
+	"name": "wait-2s",
 	"properties": {
 		"activities": [
 			{
@@ -8,7 +8,7 @@
 				"dependsOn": [],
 				"userProperties": [],
 				"typeProperties": {
-					"waitTimeInSeconds": 10
+					"waitTimeInSeconds": 2
 				}
 			}
 		],
