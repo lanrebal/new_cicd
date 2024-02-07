@@ -63,7 +63,7 @@ jobs:
         uses: azure/login@v1
         with:
           creds: '${{ secrets.azure_service_principal_connect }}'
-          
+          enable-AzPSSession: true
 
       - name: data-factory-deploy
         uses: Azure/data-factory-deploy-action@v1.2.0
