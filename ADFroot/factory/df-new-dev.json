@@ -1,0 +1,9 @@
+{
+	"name": "df-new-dev",
+	"location": "canadacentral",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "8a91284a-660c-4517-bbbe-fb3b89032fd3",
+		"tenantId": "1dc001de-7e64-4e0c-8838-3c61506ab15c"
+	}
+}
