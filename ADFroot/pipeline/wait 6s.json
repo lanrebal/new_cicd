@@ -1,5 +1,5 @@
 {
-	"name": "wait-5s",
+	"name": "wait 6s",
 	"properties": {
 		"activities": [
 			{
@@ -8,12 +8,10 @@
 				"dependsOn": [],
 				"userProperties": [],
 				"typeProperties": {
-					"waitTimeInSeconds": 5
+					"waitTimeInSeconds": 6
 				}
 			}
 		],
-		"annotations": [],
-		"lastPublishTime": "2024-02-07T16:34:43Z"
-	},
-	"type": "Microsoft.DataFactory/factories/pipelines"
+		"annotations": []
+	}
 }
