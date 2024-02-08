@@ -7,7 +7,7 @@ permissions:
       contents: read
 
 jobs:
-  build-dev:
+  build-prod:
     runs-on: ubuntu-latest
     steps:
 
@@ -47,7 +47,7 @@ jobs:
         path: ${{github.workspace}}/ADFroot/build/ExportedArmTemplate
 
   deploy-prod:
-    needs: build-dev
+    needs: build-prod
     runs-on: ubuntu-latest
     steps:
     
