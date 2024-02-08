@@ -30,12 +30,12 @@ jobs:
         
 # Validates all of the Data Factory resources in the repository. You'll get the same validation errors as when "Validate All" is selected.
     - name: Validate
-      run: npm run build validate ${{github.workspace}}/ADFroot/ /subscriptions/919e9680-f73f-4012-a318-3fcfee9f22c7/resourceGroups/rg_ci_cd_test_rg/providers/Microsoft.DataFactory/factories/adf-dev-lb # (2) The validate command needs the root folder location of your repository where all the objects are stored. And the 2nd parameter is the resourceID of the ADF instance 
+      run: npm run build validate ${{github.workspace}}/ADFroot/ /subscriptions/b5c2fa53-cf8f-4f5c-b744-ab40d3967c24/resourceGroups/rg_ci_cd_new_dev/providers/Microsoft.DataFactory/factories/df-new-dev # (2) The validate command needs the root folder location of your repository where all the objects are stored. And the 2nd parameter is the resourceID of the ADF instance 
       working-directory: ${{github.workspace}}/ADFroot/build
  
 
     - name: Validate and Generate ARM template
-      run: npm run build export ${{github.workspace}}/ADFroot/ /subscriptions/919e9680-f73f-4012-a318-3fcfee9f22c7/resourceGroups/rg_ci_cd_test_rg/providers/Microsoft.DataFactory/factories/adf-dev-lb "ExportedArmTemplate"  # (3) The build command, as validate, needs the root folder location of your repository where all the objects are stored. And the 2nd parameter is the resourceID of the ADF instance. The 3rd parameter is the exported ARM template artifact name 
+      run: npm run build export ${{github.workspace}}/ADFroot/ /subscriptions/b5c2fa53-cf8f-4f5c-b744-ab40d3967c24/resourceGroups/rg_ci_cd_new_dev/providers/Microsoft.DataFactory/factories/df-new-dev "ExportedArmTemplate"  # (3) The build command, as validate, needs the root folder location of your repository where all the objects are stored. And the 2nd parameter is the resourceID of the ADF instance. The 3rd parameter is the exported ARM template artifact name 
       working-directory: ${{github.workspace}}/ADFroot/build
       
  
