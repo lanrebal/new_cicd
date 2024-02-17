@@ -41,17 +41,17 @@ jobs:
 
 
 
-- name: Update ARM Template and Parameters
-  run: |
-    # Update ARM Template
-    jq '...' ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateForFactory.json > temp.json
-    mv temp.json ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateForFactory.json
+    - name: Update ARM Template and Parameters
+      run: |
+        # Update ARM Template
+        jq '...' ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateForFactory.json > temp.json
+        mv temp.json ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateForFactory.json
 
-    # Update ARM Parameters
-    jq '.parameters.ls_AzureStorage_properties_typeProperties_accountKey_secretName = {"value": "secret-storage-dev"}' ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateParametersForFactory.json > temp.json
-    mv temp.json ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateParametersForFactory.json
-  working-directory: ${{github.workspace}}
-      
+        # Update ARM Parameters
+        jq '.parameters.ls_AzureStorage_properties_typeProperties_accountKey_secretName = {"value": "secret-storage-dev"}' ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateParametersForFactory.json > temp.json
+        mv temp.json ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateParametersForFactory.json
+      working-directory: ${{github.workspace}}
+          
       
  
 # In order to leverage the artifact in another job, we need to upload it with the upload action 
