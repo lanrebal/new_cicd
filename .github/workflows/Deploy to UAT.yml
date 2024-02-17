@@ -67,10 +67,16 @@ jobs:
       uses: actions/download-artifact@v3.0.2
       with:
         name: ADF-Artifacts
+        path: ${{github.workspace}}
+
+    - name: Move ARM Template and Parameters to Build Directory
+      run: |
+        mkdir -p ${{github.workspace}}/ADFroot/build/ExportedArmTemplate
+        mv ${{github.workspace}}/ARMTemplateForFactory.json ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateForFactory.json
+        mv ${{github.workspace}}/ARMTemplateParametersForFactory.json ${{github.workspace}}/ADFroot/build/ARMTemplateParametersForFactory.json
 
     - name: Create Custom ARM Parameters File for UAT
       run: |
-        mkdir -p ${{github.workspace}}/ADFroot/build
         echo '{
           "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
           "contentVersion": "1.0.0.0",
