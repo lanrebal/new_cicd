@@ -1,0 +1,16 @@
+{
+	"name": "ds_excel_to_sql_db_dest",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_db_dev",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "excel_to_db"
+		}
+	}
+}
