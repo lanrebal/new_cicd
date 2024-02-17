@@ -38,6 +38,7 @@ jobs:
 
     - name: Create Custom ARM Parameters File for DEV
       run: |
+        mkdir -p ${{github.workspace}}/ADFroot/build
         echo '{
           "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
           "contentVersion": "1.0.0.0",
@@ -48,8 +49,7 @@ jobs:
             "ls_storage_dev_properties_typeProperties_url": {"value": "https://storageldev.dfs.core.windows.net"},
             "ls_storage_dev_properties_typeProperties_accountKey_secretName": {"value": "secret-storage-dev"}
           }
-        }' > ARMTemplateParametersForFactory.json
-      working-directory: ${{github.workspace}}/ADFroot/build
+        }' > ${{github.workspace}}/ADFroot/build/ARMTemplateParametersForFactory.json
 
     - name: Upload ARM Template and Parameters
       uses: actions/upload-artifact@v3
@@ -70,6 +70,7 @@ jobs:
 
     - name: Create Custom ARM Parameters File for UAT
       run: |
+        mkdir -p ${{github.workspace}}/ADFroot/build
         echo '{
           "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
           "contentVersion": "1.0.0.0",
@@ -80,8 +81,7 @@ jobs:
             "ls_storage_dev_properties_typeProperties_url": {"value": "https://storageluat.dfs.core.windows.net"},
             "ls_storage_dev_properties_typeProperties_accountKey_secretName": {"value": "secret-storage-uat"}
           }
-        }' > ARMTemplateParametersForFactory.json
-      working-directory: ${{github.workspace}}/ADFroot/build
+        }' > ${{github.workspace}}/ADFroot/build/ARMTemplateParametersForFactory.json
 
     - name: Login via Az module
       uses: azure/login@v1
