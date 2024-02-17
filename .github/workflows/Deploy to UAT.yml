@@ -44,7 +44,7 @@ jobs:
     - name: Update ARM Template and Parameters
       run: |
         # Update ARM Template
-        jq '...' ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateForFactory.json > temp.json
+        jq '.resources[] |= (select(.type == "Microsoft.DataFactory/factories/linkedServices" and .name == "ls_storage_dev").properties.typeProperties += {"connectionString": {"type": "AzureKeyVaultSecret", "store": {"referenceName": "kv-l-dev", "type": "LinkedServiceReference"}, "secretName": "[parameters(''ls_AzureStorage_properties_typeProperties_accountKey_secretName'')]"}})' ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateForFactory.json > temp.json
         mv temp.json ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateForFactory.json
 
         # Update ARM Parameters
