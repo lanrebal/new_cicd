@@ -49,13 +49,13 @@ jobs:
             "ls_storage_dev_properties_typeProperties_accountKey_secretName": {"value": "secret-storage-dev"}
           }
         }' > ARMTemplateParametersForFactory.json
-      working-directory: ${{github.workspace}}/ADFroot/build/ExportedArmTemplate
+      working-directory: ${{github.workspace}}/ADFroot/build
 
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ExportedArmTemplate
-        path: ${{github.workspace}}/ADFroot/build/ExportedArmTemplate
+        name: ARMTemplateParametersForFactory
+        path: ${{github.workspace}}/ADFroot/build/ARMTemplateParametersForFactory.json
 
   deploy-uat:
     needs: build-dev
@@ -64,7 +64,7 @@ jobs:
     - name: Download a Build Artifact
       uses: actions/download-artifact@v3.0.2
       with:
-        name: ExportedArmTemplate
+        name: ARMTemplateParametersForFactory
 
     - name: Create Custom ARM Parameters File for UAT
       run: |
@@ -79,7 +79,7 @@ jobs:
             "ls_storage_dev_properties_typeProperties_accountKey_secretName": {"value": "secret-storage-uat"}
           }
         }' > ARMTemplateParametersForFactory.json
-      working-directory: ${{github.workspace}}/ADFroot/build/ExportedArmTemplate
+      working-directory: ${{github.workspace}}
 
     - name: Login via Az module
       uses: azure/login@v1
