@@ -72,7 +72,7 @@ jobs:
           dataFactoryName: df-new-uat    # (7) your target ADF name
           armTemplateFile: ARMTemplateForFactory.json   # (8) ARM template file name ARMTemplateForFactory.json
           armTemplateParametersFile: ARMTemplateParametersForFactory.json    # (9) ARM template parameters file name ARMTemplateParametersForFactory.json
-         # additionalParameters: dev_ls_AzureKeyVault_properties_typeProperties_baseUrl=https://cicd-uat-kv.vault.azure.net/ dev_AzureSqlDatabase1_properties_typeProperties_connectionString_secretName=uat-db-secret1
+          additionalParameters: factoryName=df-new-uat ls_db_dev_properties_typeProperties_connectionString_secretName=secret-db-uat ls_kv_dev_properties_typeProperties_baseUrl=https://kv-l-uat.vault.azure.net/ ls_storage_dev_properties_typeProperties_url=https://storageluat.dfs.core.windows.net
           
           # (10) Parameters which will be replaced in the ARM template. Expected format 'key1=value key2=value keyN=value'. At the minimum here you should provide the target ADF name parameter. Check the ARMTemplateParametersForFactory.json file for all the parameters that are expected in your scenario
          
