@@ -1,0 +1,27 @@
+{
+	"name": "ds_table1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_db_dev",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "PersonID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "StateID",
+				"type": "int",
+				"precision": 10
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "test1"
+		}
+	}
+}
