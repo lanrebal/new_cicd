@@ -41,19 +41,11 @@ jobs:
 
 
 
-    # Add a step to display the generated ARM Template and Parameters
-    - name: Display Generated ARM Template and Parameters
-      run: |
-        cat ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateForFactory.json
-        cat ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateParametersForFactory.json
-      working-directory: ${{github.workspace}}
-
     # Add a step to modify ARMTemplateForFactory.json
     - name: Update ARM Template
       run: |
         jq '.resources[] |= (select(.type == "Microsoft.DataFactory/factories/linkedServices").properties.typeProperties += {"connectionString": {"type": "AzureKeyVaultSecret", "store": {"referenceName": "kv-l-dev", "type": "LinkedServiceReference"}, "secretName": "[parameters(''ls_AzureStorage_properties_typeProperties_accountKey_secretName'')]"}})' ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateForFactory.json > temp.json
         mv temp.json ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateForFactory.json
-        cat ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateForFactory.json
       working-directory: ${{github.workspace}}
 
     # Add a step to modify ARMTemplateParametersForFactory.json
@@ -61,6 +53,12 @@ jobs:
       run: |
         jq '.parameters.ls_AzureStorage_properties_typeProperties_accountKey_secretName = {"value": "secret-storage-dev"}' ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateParametersForFactory.json > temp.json
         mv temp.json ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateParametersForFactory.json
+      working-directory: ${{github.workspace}}
+
+    # Add a step to display the updated ARM Template and Parameters
+    - name: Display Updated ARM Template and Parameters
+      run: |
+        cat ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateForFactory.json
         cat ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateParametersForFactory.json
       working-directory: ${{github.workspace}}
       
