@@ -41,18 +41,18 @@ jobs:
 
 
 
-    # Add a step to modify ARMTemplateForFactory.json
     - name: Update ARM Template
       run: |
         jq '.typeProperties.connectionString += {"type": "AzureKeyVaultSecret", "store": {"referenceName": "kv-l-dev", "type": "LinkedServiceReference"}, "secretName": "[parameters(''ls_AzureStorage_properties_typeProperties_accountKey_secretName'')]"}' ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateForFactory.json > temp.json
         mv temp.json ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateForFactory.json
+        cat ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateForFactory.json
       working-directory: ${{github.workspace}}
 
-    # Add a step to modify ARMTemplateParametersForFactory.json
     - name: Update ARM Template Parameters
       run: |
         jq '.parameters.ls_AzureStorage_properties_typeProperties_accountKey_secretName = {"value": "secret-storage-dev"}' ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateParametersForFactory.json > temp.json
         mv temp.json ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateParametersForFactory.json
+        cat ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateParametersForFactory.json
       working-directory: ${{github.workspace}}
       
       
