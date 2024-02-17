@@ -51,20 +51,22 @@ jobs:
         }' > ARMTemplateParametersForFactory.json
       working-directory: ${{github.workspace}}/ADFroot/build
 
-    - name: Upload artifact
+    - name: Upload ARM Template and Parameters
       uses: actions/upload-artifact@v3
       with:
-        name: ARMTemplateParametersForFactory
-        path: ${{github.workspace}}/ADFroot/build/ARMTemplateParametersForFactory.json
+        name: ADF-Artifacts
+        path: |
+          ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateForFactory.json
+          ${{github.workspace}}/ADFroot/build/ARMTemplateParametersForFactory.json
 
   deploy-uat:
     needs: build-dev
     runs-on: ubuntu-latest
     steps:
-    - name: Download a Build Artifact
+    - name: Download ADF Artifacts
       uses: actions/download-artifact@v3.0.2
       with:
-        name: ARMTemplateParametersForFactory
+        name: ADF-Artifacts
 
     - name: Create Custom ARM Parameters File for UAT
       run: |
@@ -92,5 +94,5 @@ jobs:
       with:
         resourceGroupName: rg_ci_cd_new_uat
         dataFactoryName: df-new-uat
-        armTemplateFile: ARMTemplateForFactory.json
-        armTemplateParametersFile: ARMTemplateParametersForFactory.json
+        armTemplateFile: ${{github.workspace}}/ARMTemplateForFactory.json
+        armTemplateParametersFile: ${{github.workspace}}/ARMTemplateParametersForFactory.json
