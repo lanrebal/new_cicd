@@ -67,6 +67,12 @@ jobs:
       uses: actions/download-artifact@v3.0.2
       with:
         name: ADF-Artifacts
+        path: ${{github.workspace}}
+
+    - name: Move ARM Template and Parameters to correct path
+      run: |
+        mv ${{github.workspace}}/ARMTemplateForFactory.json ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateForFactory.json
+        mv ${{github.workspace}}/ARMTemplateParametersForFactory.json ${{github.workspace}}/ADFroot/build/ARMTemplateParametersForFactory.json
 
     - name: Create Custom ARM Parameters File for UAT
       run: |
@@ -81,7 +87,7 @@ jobs:
             "ls_storage_dev_properties_typeProperties_accountKey_secretName": {"value": "secret-storage-uat"}
           }
         }' > ARMTemplateParametersForFactory.json
-      working-directory: ${{github.workspace}}
+      working-directory: ${{github.workspace}}/ADFroot/build
 
     - name: Login via Az module
       uses: azure/login@v1
@@ -94,5 +100,5 @@ jobs:
       with:
         resourceGroupName: rg_ci_cd_new_uat
         dataFactoryName: df-new-uat
-        armTemplateFile: ${{github.workspace}}/ARMTemplateForFactory.json
-        armTemplateParametersFile: ${{github.workspace}}/ARMTemplateParametersForFactory.json
+        armTemplateFile: ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateForFactory.json
+        armTemplateParametersFile: ${{github.workspace}}/ADFroot/build/ARMTemplateParametersForFactory.json
