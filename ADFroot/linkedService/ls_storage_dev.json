@@ -1,12 +1,6 @@
 {
 	"name": "ls_storage_dev",
 	"properties": {
-		"parameters": {
-			"ls_AzureStorage_properties_typeProperties_accountKey_secretName": {
-				"type": "string",
-				"defaultValue": "secret-storage-dev"
-			}
-		},
 		"annotations": [],
 		"type": "AzureBlobFS",
 		"typeProperties": {
