@@ -11,7 +11,7 @@
 					"referenceName": "ls_kv_dev",
 					"type": "LinkedServiceReference"
 				},
-				"secretName": "secret-storage-dev"
+				"secretName": "@{linkedService().ls_AzureStorage_properties_typeProperties_accountKey_secretName}"
 			}
 		}
 	}
