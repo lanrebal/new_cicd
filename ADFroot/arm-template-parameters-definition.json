@@ -117,18 +117,7 @@
                     "sasToken": "|",
                     "connectionString": "|:-connectionString:secureString",
                     "hostKeyFingerprint": "=",
-                    "mlWorkspaceName": "=",
-                    "AzureBlobFS": {
-                        "url": "=",
-                        "accountKey": {
-                            "type": "AzureKeyVaultSecret",
-                            "store": {
-                                "referenceName": "=",
-                                "type": "LinkedServiceReference"
-                            },
-                            "secretName": "[parameters('ls_AzureStorage_properties_typeProperties_accountKey_secretName')]"
-                        }
-                    }
+                    "mlWorkspaceName": "="
                 }
             }
         },
@@ -174,12 +163,6 @@
             "*": {
                 "value": "="
             }
-        }
-    },
-    "parameters": {
-        "ls_AzureStorage_properties_typeProperties_accountKey_secretName": {
-            "type": "string",
-            "Value": "secret-storage-dev" 
         }
     }
 }
