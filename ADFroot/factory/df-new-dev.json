@@ -1,13 +1,5 @@
 {
 	"name": "df-new-dev",
-	"properties": {
-		"globalParameters": {
-			"ls_AzureStorage_properties_typeProperties_accountKey_secretName": {
-				"type": "string",
-				"value": "secret-storage-dev"
-			}
-		}
-	},
 	"location": "canadacentral",
 	"identity": {
 		"type": "SystemAssigned",
