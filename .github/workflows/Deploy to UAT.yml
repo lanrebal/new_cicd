@@ -85,6 +85,21 @@ jobs:
         fi
       working-directory: ${{github.workspace}}/ADFroot/build/ExportedArmTemplate
 
+
+    - name: Update ARM Template to Include New Parameter
+      run: |
+        jq '.parameters |= . + {"ls_AzureStorage_properties_typeProperties_accountKey_secretName": {"defaultValue": "secret-storage-dev", "type": "string"}}' ARMTemplateForFactory.json > tempTemplate.json
+        mv tempTemplate.json ARMTemplateForFactory.json
+      working-directory: ${{github.workspace}}/ADFroot/build/ExportedArmTemplate
+
+    - name: Update ARM Parameters File for UAT
+      run: |
+        jq '.parameters |= . + {"ls_AzureStorage_properties_typeProperties_accountKey_secretName": {"value": "secret-storage-uat"}}' ARMTemplateParametersForFactory.json > tempParameters.json
+        mv tempParameters.json ARMTemplateParametersForFactory.json
+      working-directory: ${{github.workspace}}/ADFroot/build/ExportedArmTemplate
+
+      
+
     - name: Deploy ARM Template to UAT
       uses: Azure/data-factory-deploy-action@v1.2.0
       with:
