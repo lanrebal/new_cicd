@@ -57,6 +57,24 @@ jobs:
         creds: '${{ secrets.CONNECT_TO_UAT }}'
         enable-AzPSSession: true
 
+
+    - name: Update ARM Template to Include New Parameter
+      run: |
+        # Check if the parameter is already in the template, if not, add it
+        jq '.parameters |= . + {"ls_AzureStorage_properties_typeProperties_accountKey_secretName": {"defaultValue": "secret-storage-dev", "type": "string"}}' ARMTemplateForFactory.json > tempTemplate.json
+        mv tempTemplate.json ARMTemplateForFactory.json
+      working-directory: ${{github.workspace}}/ADFroot/build/ExportedArmTemplate
+
+    - name: Update ARM Parameters File
+      run: |
+        # Set the parameter value in the parameters file
+        jq '.parameters.ls_AzureStorage_properties_typeProperties_accountKey_secretName.value = "secret-storage-uat"' ARMTemplateParametersForFactory.json > tempParameters.json
+        mv tempParameters.json ARMTemplateParametersForFactory.json
+      working-directory: ${{github.workspace}}/ADFroot/build/ExportedArmTemplate
+
+
+        
+
     - name: Data-factory-deploy to UAT
       run: |
         # Assuming that the environment is determined by the PR approval, set the secret name accordingly
