@@ -4,16 +4,15 @@ on:
     - main
 
 permissions:
-      id-token: write
-      contents: read
+  id-token: write
+  contents: read
 
 jobs:
-  build-dev:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-
     - uses: actions/checkout@v3
-# Installs Node and the npm packages saved in your package.json file in the build
+
     - name: Set Node.js version
       run: echo "NODE_VERSION=18.x" >> $GITHUB_ENV
 
@@ -23,57 +22,56 @@ jobs:
         node-version: ${{ env.NODE_VERSION }}
 
     - name: Check Node.js version
-      run: node -v      
-        
-    - name: install ADF Utilities package
+      run: node -v
+
+    - name: Install ADF Utilities package
       run: npm install
-      working-directory: ${{github.workspace}}/ADFroot/build  # (1) provide the folder location of the package.json file
-        
-# Validates all of the Data Factory resources in the repository. You'll get the same validation errors as when "Validate All" is selected.
-    - name: Validate
-      run: npm run build validate ${{github.workspace}}/ADFroot/ /subscriptions/b5c2fa53-cf8f-4f5c-b744-ab40d3967c24/resourceGroups/rg_ci_cd_new_dev/providers/Microsoft.DataFactory/factories/df-new-dev # (2) The validate command needs the root folder location of your repository where all the objects are stored. And the 2nd parameter is the resourceID of the ADF instance 
       working-directory: ${{github.workspace}}/ADFroot/build
- 
 
     - name: Validate and Generate ARM template
-      run: npm run build export ${{github.workspace}}/ADFroot/ /subscriptions/b5c2fa53-cf8f-4f5c-b744-ab40d3967c24/resourceGroups/rg_ci_cd_new_dev/providers/Microsoft.DataFactory/factories/df-new-dev "ExportedArmTemplate"  # (3) The build command, as validate, needs the root folder location of your repository where all the objects are stored. And the 2nd parameter is the resourceID of the ADF instance. The 3rd parameter is the exported ARM template artifact name 
+      run: npm run build export ${{github.workspace}}/ADFroot/ /subscriptions/b5c2fa53-cf8f-4f5c-b744-ab40d3967c24/resourceGroups/rg_ci_cd_new_dev/providers/Microsoft.DataFactory/factories/df-new-dev "ExportedArmTemplate"
       working-directory: ${{github.workspace}}/ADFroot/build
-      
- 
-# In order to leverage the artifact in another job, we need to upload it with the upload action 
-    - name: upload artifact
+
+    - name: Update ARM Template Parameters for UAT
+      run: |
+        jq '.parameters.ls_AzureStorage_properties_typeProperties_accountKey_secretName.value = "secret-storage-uat"' ARMTemplateParametersForFactory.json > tempParam.json
+        mv tempParam.json ARMTemplateParametersForFactory.json
+      working-directory: ${{github.workspace}}/ADFroot/build/ExportedArmTemplate
+
+    - name: Upload ARM Template and Parameters
       uses: actions/upload-artifact@v3
       with:
-        name: ExportedArmTemplate # (4) use the same artifact name you used in the previous export step
-        path: ${{github.workspace}}/ADFroot/build/ExportedArmTemplate
+        name: ADF-Artifacts
+        path: |
+          ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateForFactory.json
+          ${{github.workspace}}/ADFroot/build/ExportedArmTemplate/ARMTemplateParametersForFactory.json
 
-  deploy-uat:
-    needs: build-dev
-    runs-on: ubuntu-latest
-    steps:
-    
- # we 1st download the previously uploaded artifact so we can leverage it later in the release job     
-      - name: Download a Build Artifact
-        uses: actions/download-artifact@v3.0.2
-        with:
-          name: ExportedArmTemplate # (5) Artifact name 
+    - name: Download ADF Artifacts
+      uses: actions/download-artifact@v3.0.2
+      with:
+        name: ADF-Artifacts
 
+    - name: Login via Az module
+      uses: azure/login@v1
+      with:
+        creds: '${{ secrets.CONNECT_TO_UAT }}'
+        enable-AzPSSession: true
 
-      - name: Login via Az module
-        uses: azure/login@v1
-        with:
-          creds: '${{ secrets.CONNECT_TO_UAT }}'
-          enable-AzPSSession: true
+    - name: Data-factory-deploy to UAT
+      run: |
+        # Assuming that the environment is determined by the PR approval, set the secret name accordingly
+        if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then
+          ARM_PARAMS_FILE=ARMTemplateParametersForFactory.json
+          jq '.parameters.ls_AzureStorage_properties_typeProperties_accountKey_secretName.value = "secret-storage-uat"' $ARM_PARAMS_FILE > temp.json
+          mv temp.json $ARM_PARAMS_FILE
+        fi
+      working-directory: ${{github.workspace}}/ADFroot/build/ExportedArmTemplate
 
-      - name: data-factory-deploy
-        uses: Azure/data-factory-deploy-action@v1.2.0
-        with:
-          resourceGroupName: rg_ci_cd_new_uat    # (6) your target ADF resource group name
-          dataFactoryName: df-new-uat    # (7) your target ADF name
-          armTemplateFile: ARMTemplateForFactory.json   # (8) ARM template file name ARMTemplateForFactory.json
-          armTemplateParametersFile: ARMTemplateParametersForFactory.json    # (9) ARM template parameters file name ARMTemplateParametersForFactory.json
-          additionalParameters: factoryName=df-new-uat ls_db_dev_properties_typeProperties_connectionString_secretName=secret-db-uat ls_kv_dev_properties_typeProperties_baseUrl=https://kv-l-uat.vault.azure.net/ ls_storage_dev_properties_typeProperties_url=https://storageluat.dfs.core.windows.net
-          
-          # (10) Parameters which will be replaced in the ARM template. Expected format 'key1=value key2=value keyN=value'. At the minimum here you should provide the target ADF name parameter. Check the ARMTemplateParametersForFactory.json file for all the parameters that are expected in your scenario
-         
-          # skipAzModuleInstallation:  # Parameters which skip the Az module installation. Optional, default is false.
+    - name: Deploy ARM Template to UAT
+      uses: Azure/data-factory-deploy-action@v1.2.0
+      with:
+        resourceGroupName: rg_ci_cd_new_uat
+        dataFactoryName: df-new-uat
+        armTemplateFile: ARMTemplateForFactory.json
+        armTemplateParametersFile: ARMTemplateParametersForFactory.json
+        additionalParameters: factoryName=df-new-uat ls_db_dev_properties_typeProperties_connectionString_secretName=secret-db-uat ls_kv_dev_properties_typeProperties_baseUrl=https://kv-l-uat.vault.azure.net/ ls_storage_dev_properties_typeProperties_url=https://storageluat.dfs.core.windows.net
