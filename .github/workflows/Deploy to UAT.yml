@@ -57,30 +57,36 @@ jobs:
         armTemplateParametersFile: ARMTemplateParametersForFactory.json
         additionalParameters: factoryName=df-new-uat ls_db_dev_properties_typeProperties_connectionString_secretName=secret-db-uat ls_kv_dev_properties_typeProperties_baseUrl=https://kv-l-uat.vault.azure.net/ ls_sas_storage_dev_properties_typeProperties_sasUri_secretName=secret-sas-storage-uat
 
+
+
+
+
+
+jobs:
   stop-adf-triggers:
-    needs: deploy-uat
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
+
     - name: Login to Azure using Service Principal JSON
       uses: azure/login@v1
       with:
         creds: ${{ secrets.CONNECT_TO_DEV }}
+
     - name: Install Azure PowerShell module
       run: |
-        # Install the required PowerShell modules
         Install-Module -Name Az -Scope CurrentUser -Repository PSGallery -Force
         Install-Module -Name Az.DataFactory -Scope CurrentUser -Repository PSGallery -Force
+      shell: pwsh
+
     - name: Stop all triggers in DEV ADF
       run: |
-        # Authenticate with Azure using the service principal JSON
         $spn = '${{ secrets.CONNECT_TO_DEV }}' | ConvertFrom-Json
         $password = ConvertTo-SecureString -String $spn.clientSecret -AsPlainText -Force
         $pscredential = New-Object System.Management.Automation.PSCredential($spn.clientId, $password)
         Connect-AzAccount -ServicePrincipal -Credential $pscredential -Tenant $spn.tenantId
 
-        # Stop all triggers
         $triggers = Get-AzDataFactoryV2Trigger -ResourceGroupName "rg_ci_cd_new_dev" -DataFactoryName "df-new-dev" -ErrorAction SilentlyContinue    
         if ($triggers) {
           foreach ($trigger in $triggers) {
@@ -88,3 +94,6 @@ jobs:
           }
         }
       shell: pwsh
+
+
+
