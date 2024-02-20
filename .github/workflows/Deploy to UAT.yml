@@ -89,7 +89,7 @@ jobs:
           Connect-AzAccount -ServicePrincipal -Credential $pscredential -Tenant $spn.tenantId
 
       # Explicitly set the subscription context
-      Set-AzContext -SubscriptionId $spn.subscriptionId
+          Set-AzContext -SubscriptionId $spn.subscriptionId
 
           $triggers = Get-AzDataFactoryV2Trigger -ResourceGroupName "rg_ci_cd_new_dev" -DataFactoryName "df-new-dev" -ErrorAction SilentlyContinue    
           if ($triggers) {
