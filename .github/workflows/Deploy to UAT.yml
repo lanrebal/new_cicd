@@ -54,6 +54,9 @@ jobs:
           armTemplateParametersFile: ARMTemplateParametersForFactory.json
           additionalParameters: factoryName=df-new-uat ls_db_dev_properties_typeProperties_connectionString_secretName=secret-db-uat ls_kv_dev_properties_typeProperties_baseUrl=https://kv-l-uat.vault.azure.net/ ls_sas_storage_dev_properties_typeProperties_sasUri_secretName=secret-sas-storage-uat
 
+
+
+
   stop-adf-triggers:
     needs: deploy-uat
     runs-on: ubuntu-latest
@@ -84,4 +87,5 @@ jobs:
           azPSVersion: 'LatestVersion'
           errorActionPreference: Stop
           failOnStandardError: false
-          githubToken: ***
+          githubToken: ${{ secrets.CONNECT_TO_DEV }}
+
