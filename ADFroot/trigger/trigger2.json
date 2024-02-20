@@ -1,5 +1,5 @@
 {
-	"name": "trigger1",
+	"name": "trigger2",
 	"properties": {
 		"annotations": [],
 		"runtimeState": "Started",
@@ -16,20 +16,9 @@
 			"recurrence": {
 				"frequency": "Month",
 				"interval": 1,
-				"startTime": "2024-02-20T03:30:00",
-				"endTime": "2024-02-25T03:30:00",
-				"timeZone": "Mountain Standard Time",
-				"schedule": {
-					"minutes": [
-						0
-					],
-					"hours": [
-						20
-					],
-					"monthDays": [
-						25
-					]
-				}
+				"startTime": "2024-02-20T22:17:00",
+				"endTime": "2024-02-29T22:17:00",
+				"timeZone": "Mountain Standard Time"
 			}
 		}
 	}
