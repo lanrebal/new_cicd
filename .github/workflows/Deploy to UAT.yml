@@ -80,31 +80,35 @@ jobs:
 
 
 
-      - job: DeactivateDevTriggers
-        displayName: 'Deactivate All Triggers in DEV ADF'
-        pool:
-          vmImage: 'ubuntu-latest'
-        steps:
-        - task: AzureCLI@2
-          inputs:
-            azureSubscription: 'b5c2fa53-cf8f-4f5c-b744-ab40d3967c24'
-            scriptType: 'bash'
-            scriptLocation: 'inlineScript'
-            inlineScript: |
-              # Set variables
-              RESOURCE_GROUP="rg_ci_cd_new_dev"
-              DATA_FACTORY_NAME="df-new-dev"
+        deactivate-dev-triggers:
+          needs: deploy-uat
+          runs-on: ubuntu-latest
+          steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
       
-              # Get all triggers in the data factory
-              triggers=$(az datafactory trigger list --resource-group $RESOURCE_GROUP --factory-name $DATA_FACTORY_NAME --query "[].name" -o tsv)
+            - name: Login to Azure
+              uses: azure/login@v1
+              with:
+                creds: ${{ secrets.AZURE_CREDENTIALS }}
       
-              # Deactivate each trigger
-              for trigger in $triggers
-              do
-                echo "Pausing trigger: $trigger"
-                az datafactory trigger stop --resource-group $RESOURCE_GROUP --factory-name $DATA_FACTORY_NAME --name $trigger
-              done
-            addSpnToEnvironment: false
+            - name: Deactivate All Triggers in DEV ADF
+              run: |
+                RESOURCE_GROUP="rg_ci_cd_new_dev"
+                DATA_FACTORY_NAME="df-new-dev"
+      
+                # Login to Azure CLI (assuming AZURE_CREDENTIALS is set in your GitHub secrets)
+                az login --service-principal --username ${{ secrets.AZURE_CLIENT_ID }} --password ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
+      
+                # Get all triggers in the data factory
+                triggers=$(az datafactory trigger list --resource-group $RESOURCE_GROUP --factory-name $DATA_FACTORY_NAME --query "[].name" -o tsv)
+      
+                # Deactivate each trigger
+                for trigger in $triggers
+                do
+                  echo "Pausing trigger: $trigger"
+                  az datafactory trigger stop --resource-group $RESOURCE_GROUP --factory-name $DATA_FACTORY_NAME --name $trigger
+                done
 
 
 
