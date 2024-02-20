@@ -2,7 +2,7 @@
 	"name": "trigger1",
 	"properties": {
 		"annotations": [],
-		"runtimeState": "Stopped",
+		"runtimeState": "Started",
 		"pipelines": [
 			{
 				"pipelineReference": {
@@ -14,11 +14,22 @@
 		"type": "ScheduleTrigger",
 		"typeProperties": {
 			"recurrence": {
-				"frequency": "Minute",
-				"interval": 15,
+				"frequency": "Month",
+				"interval": 1,
 				"startTime": "2024-02-20T03:30:00",
-				"endTime": "2024-02-21T03:30:00",
-				"timeZone": "Mountain Standard Time"
+				"endTime": "2024-02-25T03:30:00",
+				"timeZone": "Mountain Standard Time",
+				"schedule": {
+					"minutes": [
+						0
+					],
+					"hours": [
+						20
+					],
+					"monthDays": [
+						25
+					]
+				}
 			}
 		}
 	}
