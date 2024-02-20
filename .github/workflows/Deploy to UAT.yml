@@ -88,8 +88,8 @@ jobs:
           $pscredential = New-Object System.Management.Automation.PSCredential($spn.clientId, $password)
           Connect-AzAccount -ServicePrincipal -Credential $pscredential -Tenant $spn.tenantId
 
-          # Set the default subscription for login
-          Update-AzConfig -DefaultSubscriptionForLogin "b5c2fa53-cf8f-4f5c-b744-ab40d3967c24"
+      # Explicitly set the subscription context
+      Set-AzContext -SubscriptionId $spn.subscriptionId
 
           $triggers = Get-AzDataFactoryV2Trigger -ResourceGroupName "rg_ci_cd_new_dev" -DataFactoryName "df-new-dev" -ErrorAction SilentlyContinue    
           if ($triggers) {
