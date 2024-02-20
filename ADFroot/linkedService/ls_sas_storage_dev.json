@@ -1,0 +1,17 @@
+{
+	"name": "ls_sas_storage_dev",
+	"properties": {
+		"annotations": [],
+		"type": "AzureBlobFS",
+		"typeProperties": {
+			"sasUri": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "ls_kv_dev",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "secret-sas-storage-dev"
+			}
+		}
+	}
+}
