@@ -1,17 +1,16 @@
 {
-	"name": "ls_storage_dev",
+	"name": "ls_sas_storage_dev",
 	"properties": {
 		"annotations": [],
 		"type": "AzureBlobFS",
 		"typeProperties": {
-			"url": "https://storageldev.dfs.core.windows.net",
-			"accountKey": {
+			"sasUri": {
 				"type": "AzureKeyVaultSecret",
 				"store": {
 					"referenceName": "ls_kv_dev",
 					"type": "LinkedServiceReference"
 				},
-				"secretName": "secret-storage-dev"
+				"secretName": "secret-sas-storage-dev"
 			}
 		}
 	}

@@ -2,7 +2,7 @@
 	"name": "ds_excel_source",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "ls_storage_dev",
+			"referenceName": "ls_sas_storage_dev",
 			"type": "LinkedServiceReference"
 		},
 		"annotations": [],
