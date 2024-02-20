@@ -77,3 +77,36 @@ jobs:
           # (10) Parameters which will be replaced in the ARM template. Expected format 'key1=value key2=value keyN=value'. At the minimum here you should provide the target ADF name parameter. Check the ARMTemplateParametersForFactory.json file for all the parameters that are expected in your scenario
          
           # skipAzModuleInstallation:  # Parameters which skip the Az module installation. Optional, default is false.
+
+
+
+      - job: DeactivateDevTriggers
+        displayName: 'Deactivate All Triggers in DEV ADF'
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+        - task: AzureCLI@2
+          inputs:
+            azureSubscription: 'b5c2fa53-cf8f-4f5c-b744-ab40d3967c24'
+            scriptType: 'bash'
+            scriptLocation: 'inlineScript'
+            inlineScript: |
+              # Set variables
+              RESOURCE_GROUP="rg_ci_cd_new_dev"
+              DATA_FACTORY_NAME="df-new-dev"
+      
+              # Get all triggers in the data factory
+              triggers=$(az datafactory trigger list --resource-group $RESOURCE_GROUP --factory-name $DATA_FACTORY_NAME --query "[].name" -o tsv)
+      
+              # Deactivate each trigger
+              for trigger in $triggers
+              do
+                echo "Pausing trigger: $trigger"
+                az datafactory trigger stop --resource-group $RESOURCE_GROUP --factory-name $DATA_FACTORY_NAME --name $trigger
+              done
+            addSpnToEnvironment: false
+
+
+
+
+          
