@@ -81,4 +81,4 @@ jobs:
 
       - name: Deactivate triggers in ADF (DEV)
         run: |
-          az rest --method post --uri "https://management.azure.com/subscriptions/Subscription_Dev/resourceGroups/rg_ci_cd_new_dev/providers/Microsoft.DataFactory/factories/df-new-dev/triggers/disable?api-version=2018-06-01" --header "Authorization: Bearer ${{ secrets.AZURE_TOKEN }}"
+          az rest --method post --uri "https://management.azure.com/subscriptions/Subscription_Dev/resourceGroups/rg_ci_cd_new_dev/providers/Microsoft.DataFactory/factories/df-new-dev/triggers/disable?api-version=2018-06-01" --header "Authorization: Bearer ${{ secrets.CONNECT_TO_DEV }}"
