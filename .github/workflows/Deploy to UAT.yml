@@ -82,6 +82,7 @@ jobs:
    
 
 
+
     - name: Deactivate All Triggers in DEV ADF
       run: |
         RESOURCE_GROUP="rg_ci_cd_new_dev"
@@ -89,11 +90,13 @@ jobs:
   
         # Get all triggers in the data factory
         triggers=$(az datafactory trigger list --resource-group $RESOURCE_GROUP --factory-name $DATA_FACTORY_NAME --query "[].name" -o tsv)
+        echo "Triggers found: $triggers"
   
         # Deactivate each trigger
         for trigger in $triggers
         do
-          echo "Pausing trigger: $trigger"
+          echo "Attempting to pause trigger: $trigger"
           stop_output=$(az datafactory trigger stop --resource-group $RESOURCE_GROUP --factory-name $DATA_FACTORY_NAME --name $trigger 2>&1)
           echo "Output of stop command for $trigger: $stop_output"
         done
+  
