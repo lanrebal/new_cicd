@@ -1,0 +1,29 @@
+- name: 'Stop ADF triggers in DEV environment'
+  uses: azure/powershell@v1
+  with:
+    inlineScript: |
+      # Setting Resource Group and Data Factory names
+      $ResourceGroupName = "rg_ci_cd_new_dev" 
+      $DataFactoryName = "df-new-dev"
+      
+      # Connect to Azure using the service principal from GitHub secret
+      $spn = '${{ secrets.CONNECT_TO_DEV }}' | ConvertFrom-Json
+      $password = ConvertTo-SecureString -String $spn.clientSecret -AsPlainText -Force
+      $pscredential = New-Object System.Management.Automation.PSCredential ($spn.clientId, $password)
+      Connect-AzAccount -ServicePrincipal -Credential $pscredential -TenantId $spn.tenantId
+      Set-AzContext -SubscriptionId $spn.subscriptionId
+
+      # Retrieving and stopping triggers
+      $Triggers = Get-AzDataFactoryV2Trigger -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName
+      foreach ($trigger in $Triggers) {
+        if($trigger.Properties.RuntimeState -eq "Started") {
+          Stop-AzDataFactoryV2Trigger -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName -Name $trigger.Name -Force
+          Write-Host "Stopped trigger $($trigger.Name)."
+        } else {
+          Write-Host "Trigger $($trigger.Name) is already in a stopped state."
+        }
+      }
+
+      Write-Host "All triggers in the DEV environment have been processed for stopping."
+    azPSVersion: 'LatestVersion'
+  if: success()
