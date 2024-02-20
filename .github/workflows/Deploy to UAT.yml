@@ -73,15 +73,15 @@ jobs:
             Connect-AzAccount -ServicePrincipal -Credential $pscredential -TenantId $spn.tenantId
             Set-AzContext -SubscriptionId $spn.subscriptionId
       
-      # Retrieving and stopping triggers
-      $Triggers = Get-AzDataFactoryV2Trigger -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName
-      foreach ($trigger in $Triggers) {
-        if($trigger.Properties.RuntimeState -eq "Started") {
-          Stop-AzDataFactoryV2Trigger -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName -Name $trigger.Name -Force
-          Write-Host "Stopped trigger $($trigger.Name)."
-        }
-      }
-    azPSVersion: 'LatestVersion'
-    errorActionPreference: Stop
-    failOnStandardError: false
-    githubToken: ***
+            # Retrieving and stopping triggers
+            $Triggers = Get-AzDataFactoryV2Trigger -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName
+            foreach ($trigger in $Triggers) {
+              if($trigger.Properties.RuntimeState -eq "Started") {
+                Stop-AzDataFactoryV2Trigger -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName -Name $trigger.Name -Force
+                Write-Host "Stopped trigger $($trigger.Name)."
+              }
+            }
+          azPSVersion: 'LatestVersion'
+          errorActionPreference: Stop
+          failOnStandardError: false
+          githubToken: ***
