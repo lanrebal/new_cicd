@@ -83,14 +83,29 @@ jobs:
 
 
 
+  
+
+
+
+
     - name: Deactivate All Triggers in DEV ADF
       run: |
         RESOURCE_GROUP="rg_ci_cd_new_dev"
         DATA_FACTORY_NAME="df-new-dev"
   
+        # Install datafactory extension if not present
+        az extension add --name datafactory --only-show-errors
+  
         # Get all triggers in the data factory
+        echo "Fetching triggers from $DATA_FACTORY_NAME in $RESOURCE_GROUP..."
         triggers=$(az datafactory trigger list --resource-group $RESOURCE_GROUP --factory-name $DATA_FACTORY_NAME --query "[].name" -o tsv)
         echo "Triggers found: $triggers"
+  
+        # Check if any triggers are found
+        if [ -z "$triggers" ]; then
+          echo "No triggers found in the data factory."
+          exit 0
+        fi
   
         # Deactivate each trigger
         for trigger in $triggers
@@ -99,4 +114,3 @@ jobs:
           stop_output=$(az datafactory trigger stop --resource-group $RESOURCE_GROUP --factory-name $DATA_FACTORY_NAME --name $trigger 2>&1)
           echo "Output of stop command for $trigger: $stop_output"
         done
-  
