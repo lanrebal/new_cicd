@@ -25,6 +25,7 @@
 					},
 					"sink": {
 						"type": "AzureSqlSink",
+						"preCopyScript": "IF OBJECT_ID('[dbo].[excel_to_db]', 'U') IS NOT NULL\n    DROP TABLE [dbo].[excel_to_db];\n",
 						"writeBehavior": "insert",
 						"sqlWriterUseTableLock": false,
 						"tableOption": "autoCreate",
