@@ -4,16 +4,15 @@ on:
     - main
 
 permissions:
-      id-token: write
-      contents: read
+  id-token: write
+  contents: read
 
 jobs:
   build-dev:
     runs-on: ubuntu-latest
     steps:
-
     - uses: actions/checkout@v3
-# Installs Node and the npm packages saved in your package.json file in the build
+
     - name: Set Node.js version
       run: echo "NODE_VERSION=18.x" >> $GITHUB_ENV
 
@@ -24,93 +23,75 @@ jobs:
 
     - name: Check Node.js version
       run: node -v      
-        
+
     - name: install ADF Utilities package
       run: npm install
-      working-directory: ${{github.workspace}}/ADFroot/build  # (1) provide the folder location of the package.json file
-        
-# Validates all of the Data Factory resources in the repository. You'll get the same validation errors as when "Validate All" is selected.
-    - name: Validate
-      run: npm run build validate ${{github.workspace}}/ADFroot/ /subscriptions/b5c2fa53-cf8f-4f5c-b744-ab40d3967c24/resourceGroups/rg_ci_cd_new_dev/providers/Microsoft.DataFactory/factories/df-new-dev # (2) The validate command needs the root folder location of your repository where all the objects are stored. And the 2nd parameter is the resourceID of the ADF instance 
       working-directory: ${{github.workspace}}/ADFroot/build
- 
+
+    - name: Validate
+      run: npm run build validate ${{github.workspace}}/ADFroot/ /subscriptions/b5c2fa53-cf8f-4f5c-b744-ab40d3967c24/resourceGroups/rg_ci_cd_new_dev/providers/Microsoft.DataFactory/factories/df-new-dev
+      working-directory: ${{github.workspace}}/ADFroot/build
 
     - name: Validate and Generate ARM template
-      run: npm run build export ${{github.workspace}}/ADFroot/ /subscriptions/b5c2fa53-cf8f-4f5c-b744-ab40d3967c24/resourceGroups/rg_ci_cd_new_dev/providers/Microsoft.DataFactory/factories/df-new-dev "ExportedArmTemplate"  # (3) The build command, as validate, needs the root folder location of your repository where all the objects are stored. And the 2nd parameter is the resourceID of the ADF instance. The 3rd parameter is the exported ARM template artifact name 
+      run: npm run build export ${{github.workspace}}/ADFroot/ /subscriptions/b5c2fa53-cf8f-4f5c-b744-ab40d3967c24/resourceGroups/rg_ci_cd_new_dev/providers/Microsoft.DataFactory/factories/df-new-dev "ExportedArmTemplate"
       working-directory: ${{github.workspace}}/ADFroot/build
-      
- 
-# In order to leverage the artifact in another job, we need to upload it with the upload action 
+
     - name: upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ExportedArmTemplate # (4) use the same artifact name you used in the previous export step
+        name: ExportedArmTemplate
         path: ${{github.workspace}}/ADFroot/build/ExportedArmTemplate
 
   deploy-uat:
     needs: build-dev
     runs-on: ubuntu-latest
     steps:
-    
- # we 1st download the previously uploaded artifact so we can leverage it later in the release job     
-      - name: Download a Build Artifact
-        uses: actions/download-artifact@v3.0.2
-        with:
-          name: ExportedArmTemplate # (5) Artifact name 
+    - name: Download a Build Artifact
+      uses: actions/download-artifact@v3.0.2
+      with:
+        name: ExportedArmTemplate
 
+    - name: Login via Az module
+      uses: azure/login@v1
+      with:
+        creds: '${{ secrets.CONNECT_TO_UAT }}'
+        enable-AzPSSession: true
 
-      - name: Login via Az module
-        uses: azure/login@v1
-        with:
-          creds: '${{ secrets.CONNECT_TO_UAT }}'
-          enable-AzPSSession: true
+    - name: data-factory-deploy
+      uses: Azure/data-factory-deploy-action@v1.2.0
+      with:
+        resourceGroupName: rg_ci_cd_new_uat
+        dataFactoryName: df-new-uat
+        armTemplateFile: ARMTemplateForFactory.json
+        armTemplateParametersFile: ARMTemplateParametersForFactory.json
+        additionalParameters: factoryName=df-new-uat ls_db_dev_properties_typeProperties_connectionString_secretName=secret-db-uat ls_kv_dev_properties_typeProperties_baseUrl=https://kv-l-uat.vault.azure.net/ ls_sas_storage_dev_properties_typeProperties_sasUri_secretName=secret-sas-storage-uat
 
-      - name: data-factory-deploy
-        uses: Azure/data-factory-deploy-action@v1.2.0
-        with:
-          resourceGroupName: rg_ci_cd_new_uat    # (6) your target ADF resource group name
-          dataFactoryName: df-new-uat    # (7) your target ADF name
-          armTemplateFile: ARMTemplateForFactory.json   # (8) ARM template file name ARMTemplateForFactory.json
-          armTemplateParametersFile: ARMTemplateParametersForFactory.json    # (9) ARM template parameters file name ARMTemplateParametersForFactory.json
-          additionalParameters: factoryName=df-new-uat ls_db_dev_properties_typeProperties_connectionString_secretName=secret-db-uat ls_kv_dev_properties_typeProperties_baseUrl=https://kv-l-uat.vault.azure.net/ ls_sas_storage_dev_properties_typeProperties_sasUri_secretName=secret-sas-storage-uat
-          
-          # (10) Parameters which will be replaced in the ARM template. Expected format 'key1=value key2=value keyN=value'. At the minimum here you should provide the target ADF name parameter. Check the ARMTemplateParametersForFactory.json file for all the parameters that are expected in your scenario
-         
-          # skipAzModuleInstallation:  # Parameters which skip the Az module installation. Optional, default is false.
+  deactivate-dev-triggers:
+    needs: deploy-uat
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
 
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: '${{ secrets.CONNECT_TO_DEV }}'
 
+    - name: Deactivate All Triggers in DEV ADF
+      run: |
+        RESOURCE_GROUP="rg_ci_cd_new_dev"
+        DATA_FACTORY_NAME="df-new-dev"
 
-        deactivate-dev-triggers:
-          needs: deploy-uat
-          runs-on: ubuntu-latest
-          steps:
-            - name: Checkout code
-              uses: actions/checkout@v3
-      
-            - name: Login to Azure
-              uses: azure/login@v1
-              with:
-                creds: ${{ secrets.CONNECT_TO_DEV }}
-      
-            - name: Deactivate All Triggers in DEV ADF
-              run: |
-                RESOURCE_GROUP="rg_ci_cd_new_dev"
-                DATA_FACTORY_NAME="df-new-dev"
-      
-                # Login to Azure CLI (assuming AZURE_CREDENTIALS is set in your GitHub secrets)
-                az login --service-principal --username ${{ secrets.AZURE_CLIENT_ID }} --password ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-      
-                # Get all triggers in the data factory
-                triggers=$(az datafactory trigger list --resource-group $RESOURCE_GROUP --factory-name $DATA_FACTORY_NAME --query "[].name" -o tsv)
-      
-                # Deactivate each trigger
-                for trigger in $triggers
-                do
-                  echo "Pausing trigger: $trigger"
-                  az datafactory trigger stop --resource-group $RESOURCE_GROUP --factory-name $DATA_FACTORY_NAME --name $trigger
-                done
+        # Login to Azure CLI
+        az login --service-principal --username ${{ secrets.AZURE_CLIENT_ID }} --password ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
 
+        # Get all triggers in the data factory
+        triggers=$(az datafactory trigger list --resource-group $RESOURCE_GROUP --factory-name $DATA_FACTORY_NAME --query "[].name" -o tsv)
 
-
-
-          
+        # Deactivate each trigger
+        for trigger in $triggers
+        do
+          echo "Pausing trigger: $trigger"
+          az datafactory trigger stop --resource-group $RESOURCE_GROUP --factory-name $DATA_FACTORY_NAME --name $trigger
+        done
