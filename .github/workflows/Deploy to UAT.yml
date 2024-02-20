@@ -77,8 +77,3 @@ jobs:
           # (10) Parameters which will be replaced in the ARM template. Expected format 'key1=value key2=value keyN=value'. At the minimum here you should provide the target ADF name parameter. Check the ARMTemplateParametersForFactory.json file for all the parameters that are expected in your scenario
          
           # skipAzModuleInstallation:  # Parameters which skip the Az module installation. Optional, default is false.
-
-
-      - name: Deactivate triggers in ADF (DEV)
-        run: |
-          az rest --method post --uri "https://management.azure.com/subscriptions/b5c2fa53-cf8f-4f5c-b744-ab40d3967c24/resourceGroups/rg_ci_cd_new_dev/providers/Microsoft.DataFactory/factories/df-new-dev/triggers/disable?api-version=2018-06-01" --header "Authorization: ${{ secrets.CONNECT_TO_DEV }}"
