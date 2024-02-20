@@ -68,29 +68,29 @@ jobs:
 
 
   deactivate-dev-triggers:
-  needs: deploy-uat
-  runs-on: ubuntu-latest
-  steps:
-  - name: Checkout code
-    uses: actions/checkout@v3
-
-  - name: Login to Azure
-    uses: azure/login@v1
-    with:
-      creds: ${{ secrets.CONNECT_TO_DEV }}
-
-  - name: Deactivate All Triggers in DEV ADF
-    run: |
-      RESOURCE_GROUP="rg_ci_cd_new_dev"
-      DATA_FACTORY_NAME="df-new-dev"
-
-      # Get all triggers in the data factory
-      triggers=$(az datafactory trigger list --resource-group $RESOURCE_GROUP --factory-name $DATA_FACTORY_NAME --query "[].name" -o tsv)
-
-      # Deactivate each trigger
-      for trigger in $triggers
-      do
-        echo "Pausing trigger: $trigger"
-        az datafactory trigger stop --resource-group $RESOURCE_GROUP --factory-name $DATA_FACTORY_NAME --name $trigger
-      done
+    needs: deploy-uat
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+  
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.CONNECT_TO_DEV }}
+  
+    - name: Deactivate All Triggers in DEV ADF
+      run: |
+        RESOURCE_GROUP="rg_ci_cd_new_dev"
+        DATA_FACTORY_NAME="df-new-dev"
+  
+        # Get all triggers in the data factory
+        triggers=$(az datafactory trigger list --resource-group $RESOURCE_GROUP --factory-name $DATA_FACTORY_NAME --query "[].name" -o tsv)
+  
+        # Deactivate each trigger
+        for trigger in $triggers
+        do
+          echo "Pausing trigger: $trigger"
+          az datafactory trigger stop --resource-group $RESOURCE_GROUP --factory-name $DATA_FACTORY_NAME --name $trigger
+        done
       
