@@ -11,86 +11,67 @@ jobs:
   build-dev:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Set Node.js version
-      run: echo "NODE_VERSION=18.x" >> $GITHUB_ENV
-    - name: Install Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-    - name: Check Node.js version
-      run: node -v
-    - name: install ADF Utilities package
-      run: npm install
-      working-directory: ${{github.workspace}}/ADFroot/build
-    - name: Validate
-      run: npm run build validate ${{github.workspace}}/ADFroot/ /subscriptions/b5c2fa53-cf8f-4f5c-b744-ab40d3967c24/resourceGroups/rg_ci_cd_new_dev/providers/Microsoft.DataFactory/factories/df-new-dev
-      working-directory: ${{github.workspace}}/ADFroot/build
-    - name: Validate and Generate ARM template
-      run: npm run build export ${{github.workspace}}/ADFroot/ /subscriptions/b5c2fa53-cf8f-4f5c-b744-ab40d3967c24/resourceGroups/rg_ci_cd_new_dev/providers/Microsoft.DataFactory/factories/df-new-dev "ExportedArmTemplate"
-      working-directory: ${{github.workspace}}/ADFroot/build
-    - name: upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: ExportedArmTemplate
-        path: ${{github.workspace}}/ADFroot/build/ExportedArmTemplate
+      - uses: actions/checkout@v3
+      - name: Set Node.js version
+        run: echo "NODE_VERSION=18.x" >> $GITHUB_ENV
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Check Node.js version
+        run: node -v
+      - name: install ADF Utilities package
+        run: npm install
+        working-directory: ${{ github.workspace }}/ADFroot/build
+      - name: Validate
+        run: npm run build validate ${{ github.workspace }}/ADFroot/ /subscriptions/b5c2fa53-cf8f-4f5c-b744-ab40d3967c24/resourceGroups/rg_ci_cd_new_dev/providers/Microsoft.DataFactory/factories/df-new-dev
+        working-directory: ${{ github.workspace }}/ADFroot/build
+      - name: Validate and Generate ARM template
+        run: npm run build export ${{ github.workspace }}/ADFroot/ /subscriptions/b5c2fa53-cf8f-4f5c-b744-ab40d3967c24/resourceGroups/rg_ci_cd_new_dev/providers/Microsoft.DataFactory/factories/df-new-dev "ExportedArmTemplate"
+        working-directory: ${{ github.workspace }}/ADFroot/build
+      - name: upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ExportedArmTemplate
+          path: ${{ github.workspace }}/ADFroot/build/ExportedArmTemplate
 
   deploy-uat:
     needs: build-dev
     runs-on: ubuntu-latest
     steps:
-    - name: Download a Build Artifact
-      uses: actions/download-artifact@v3.0.2
-      with:
-        name: ExportedArmTemplate
-    - name: Login via Az module
-      uses: azure/login@v1
-      with:
-        creds: '${{ secrets.CONNECT_TO_UAT }}'
-        enable-AzPSSession: true
-    - name: data-factory-deploy
-      uses: Azure/data-factory-deploy-action@v1.2.0
-      with:
-        resourceGroupName: rg_ci_cd_new_uat
-        dataFactoryName: df-new-uat
-        armTemplateFile: ARMTemplateForFactory.json
-        armTemplateParametersFile: ARMTemplateParametersForFactory.json
-        additionalParameters: factoryName=df-new-uat ls_db_dev_properties_typeProperties_connectionString_secretName=secret-db-uat ls_kv_dev_properties_typeProperties_baseUrl=https://kv-l-uat.vault.azure.net/ ls_sas_storage_dev_properties_typeProperties_sasUri_secretName=secret-sas-storage-uat
-
-
-
-
-
-
+      - uses: actions/download-artifact@v3.0.2
+        with:
+          name: ExportedArmTemplate
+      - uses: azure/login@v1
+        with:
+          creds: ${{ secrets.CONNECT_TO_UAT }}
+          enable-AzPSSession: true
+      - uses: Azure/data-factory-deploy-action@v1.2.0
+        with:
+          resourceGroupName: rg_ci_cd_new_uat
+          dataFactoryName: df-new-uat
+          armTemplateFile: ARMTemplateForFactory.json
+          armTemplateParametersFile: ARMTemplateParametersForFactory.json
+          additionalParameters: factoryName=df-new-uat ls_db_dev_properties_typeProperties_connectionString_secretName=secret-db-uat ls_kv_dev_properties_typeProperties_baseUrl=https://kv-l-uat.vault.azure.net/ ls_sas_storage_dev_properties_typeProperties_sasUri_secretName=secret-sas-storage-uat
 
   stop-adf-triggers:
     needs: deploy-uat
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Login to Azure using Service Principal JSON
-        uses: azure/login@v1
+      - uses: actions/checkout@v2
+      - uses: azure/login@v1
         with:
           creds: ${{ secrets.CONNECT_TO_DEV }}
-
-      - name: Install Azure PowerShell module
-        run: |
+      - run: |
           Install-Module -Name Az -Scope CurrentUser -Repository PSGallery -Force
           Install-Module -Name Az.DataFactory -Scope CurrentUser -Repository PSGallery -Force
         shell: pwsh
-
-      - name: Stop all triggers in DEV ADF
-        run: |
+      - run: |
           $spn = '${{ secrets.CONNECT_TO_DEV }}' | ConvertFrom-Json
           $password = ConvertTo-SecureString -String $spn.clientSecret -AsPlainText -Force
           $pscredential = New-Object System.Management.Automation.PSCredential($spn.clientId, $password)
           Connect-AzAccount -ServicePrincipal -Credential $pscredential -Tenant $spn.tenantId
-
-      # Explicitly set the subscription context
           Set-AzContext -SubscriptionId $spn.subscriptionId
-
           $triggers = Get-AzDataFactoryV2Trigger -ResourceGroupName "rg_ci_cd_new_dev" -DataFactoryName "df-new-dev" -ErrorAction SilentlyContinue    
           if ($triggers) {
             foreach ($trigger in $triggers) {
