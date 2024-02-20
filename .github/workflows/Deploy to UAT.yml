@@ -54,12 +54,11 @@ jobs:
           armTemplateParametersFile: ARMTemplateParametersForFactory.json
           additionalParameters: factoryName=df-new-uat ls_db_dev_properties_typeProperties_connectionString_secretName=secret-db-uat ls_kv_dev_properties_typeProperties_baseUrl=https://kv-l-uat.vault.azure.net/ ls_sas_storage_dev_properties_typeProperties_sasUri_secretName=secret-sas-storage-uat
 
-
-
-
-
-
-        - name: 'Stop ADF triggers in DEV environment'
+  stop-adf-triggers:
+    needs: deploy-uat
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Stop ADF triggers in DEV environment'
         uses: azure/powershell@v1
         with:
           inlineScript: |
@@ -78,13 +77,4 @@ jobs:
             $Triggers = Get-AzDataFactoryV2Trigger -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName
             foreach ($trigger in $Triggers) {
               if($trigger.Properties.RuntimeState -eq "Started") {
-                Stop-AzDataFactoryV2Trigger -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName -Name $trigger.Name -Force
-                Write-Host "Stopped trigger $($trigger.Name)."
-              } else {
-                Write-Host "Trigger $($trigger.Name) is already in a stopped state."
-              }
-            }
-      
-            Write-Host "All triggers in the DEV environment have been processed for stopping."
-          azPSVersion: 'LatestVersion'
-        if: success()
+                Stop-AzDataFactory
