@@ -62,7 +62,8 @@ jobs:
 
 
 
-jobs:
+
+
   stop-adf-triggers:
     runs-on: ubuntu-latest
     steps:
@@ -94,6 +95,7 @@ jobs:
           }
         }
       shell: pwsh
+
 
 
 
