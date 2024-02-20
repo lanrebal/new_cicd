@@ -77,6 +77,7 @@ jobs:
             ls_db_dev_properties_typeProperties_connectionString_secretName=secret-db-uat 
             ls_kv_dev_properties_typeProperties_baseUrl=https://kv-l-uat.vault.azure.net/ 
             ls_sas_storage_dev_properties_typeProperties_sasUri_secretName=secret-sas-storage-uat
+
           
           # (10) Parameters which will be replaced in the ARM template. Expected format 'key1=value key2=value keyN=value'. At the minimum here you should provide the target ADF name parameter. Check the ARMTemplateParametersForFactory.json file for all the parameters that are expected in your scenario
          
