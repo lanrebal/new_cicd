@@ -67,50 +67,33 @@ jobs:
         additionalParameters: factoryName=df-new-uat ls_db_dev_properties_typeProperties_connectionString_secretName=secret-db-uat ls_kv_dev_properties_typeProperties_baseUrl=https://kv-l-uat.vault.azure.net/ ls_sas_storage_dev_properties_typeProperties_sasUri_secretName=secret-sas-storage-uat
 
 
-  deactivate-dev-triggers:
-    needs: deploy-uat
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-  
-    - name: Login to Azure
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.CONNECT_TO_DEV }}
+
   
    
 
 
 
-  
+  - name: Stop All Triggers in DEV ADF using Azure CLI
+    run: |
+      # Login to Azure with the Service Principal
+      echo "Logging into Azure..."
+      az login --service-principal --username ${{ secrets.AZURE_CLIENT_ID }} --password ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
+      
+      # Define variables
+      RESOURCE_GROUP="rg_ci_cd_new_dev"
+      DATA_FACTORY_NAME="df-new-dev"
 
+      # Fetch and stop all triggers in the data factory
+      echo "Fetching and stopping all triggers in the Data Factory..."
+      triggers=$(az datafactory trigger list --resource-group $RESOURCE_GROUP --factory-name $DATA_FACTORY_NAME --query "[].name" -o tsv)
+      for trigger in $triggers
+      do
+        echo "Stopping trigger: $trigger"
+        az datafactory trigger stop --resource-group $RESOURCE_GROUP --factory-name $DATA_FACTORY_NAME --name $trigger
+      done
+    shell: bash
+    env:
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
 
-
-
-    - name: Deactivate All Triggers in DEV ADF
-      run: |
-        RESOURCE_GROUP="rg_ci_cd_new_dev"
-        DATA_FACTORY_NAME="df-new-dev"
-  
-        # Install datafactory extension if not present
-        az extension add --name datafactory --only-show-errors
-  
-        # Get all triggers in the data factory
-        echo "Fetching triggers from $DATA_FACTORY_NAME in $RESOURCE_GROUP..."
-        triggers=$(az datafactory trigger list --resource-group $RESOURCE_GROUP --factory-name $DATA_FACTORY_NAME --query "[].name" -o tsv)
-        echo "Triggers found: $triggers"
-  
-        # Check if any triggers are found
-        if [ -z "$triggers" ]; then
-          echo "No triggers found in the data factory."
-          exit 0
-        fi
-  
-        # Deactivate each trigger
-        for trigger in $triggers
-        do
-          echo "Attempting to pause trigger: $trigger"
-          stop_output=$(az datafactory trigger stop --resource-group $RESOURCE_GROUP --factory-name $DATA_FACTORY_NAME --name $trigger 2>&1)
-          echo "Output of stop command for $trigger: $stop_output"
-        done
