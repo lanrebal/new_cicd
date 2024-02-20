@@ -59,45 +59,46 @@ jobs:
 
 
 
-    stop-adf-triggers:
-      needs: deploy-uat
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v2
-    
-        - name: Login to Azure using Service Principal JSON
-          uses: azure/login@v1
-          with:
-            creds: ${{ secrets.CONNECT_TO_DEV }}
-    
-        - name: Install Azure PowerShell module
-          run: |
-            Install-Module -Name Az -Scope CurrentUser -Repository PSGallery -Force
-            Install-Module -Name Az.DataFactory -Scope CurrentUser -Repository PSGallery -Force
-          shell: pwsh
-    
-        - name: Stop all triggers in DEV ADF
-          run: |
-            $spn = '${{ secrets.CONNECT_TO_DEV }}' | ConvertFrom-Json
-            $password = ConvertTo-SecureString -String $spn.clientSecret -AsPlainText -Force
-            $pscredential = New-Object System.Management.Automation.PSCredential($spn.clientId, $password)
-            Connect-AzAccount -ServicePrincipal -Credential $pscredential -Tenant $spn.tenantId
-    
-            # Explicitly set the subscription context
-            Set-AzContext -SubscriptionId $spn.subscriptionId
-    
-            try {
-              Write-Host "Retrieving triggers..."
-              $triggers = Get-AzDataFactoryV2Trigger -ResourceGroupName "rg_ci_cd_new_dev" -DataFactoryName "df-new-dev" -ErrorAction Stop
-              Write-Host "Found $($triggers.Count) triggers"
-    
-              foreach ($trigger in $triggers) {
-                Write-Host "Stopping trigger: $($trigger.Name)"
-                Stop-AzDataFactoryV2Trigger -ResourceGroupName "rg_ci_cd_new_dev" -DataFactoryName "df-new-dev" -Name $trigger.Name -Force
-              }
-            } catch {
-              Write-Host "Error stopping triggers: $_"
+  stop-adf-triggers:
+    needs: deploy-uat
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+  
+      - name: Login to Azure using Service Principal JSON
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.CONNECT_TO_DEV }}
+  
+      - name: Install Azure PowerShell module
+        run: |
+          Install-Module -Name Az -Scope CurrentUser -Repository PSGallery -Force
+          Install-Module -Name Az.DataFactory -Scope CurrentUser -Repository PSGallery -Force
+        shell: pwsh
+  
+      - name: Stop all triggers in DEV ADF
+        run: |
+          $spn = '${{ secrets.CONNECT_TO_DEV }}' | ConvertFrom-Json
+          $password = ConvertTo-SecureString -String $spn.clientSecret -AsPlainText -Force
+          $pscredential = New-Object System.Management.Automation.PSCredential($spn.clientId, $password)
+          Connect-AzAccount -ServicePrincipal -Credential $pscredential -Tenant $spn.tenantId
+  
+          # Explicitly set the subscription context
+          Set-AzContext -SubscriptionId $spn.subscriptionId
+  
+          try {
+            Write-Host "Retrieving triggers..."
+            $triggers = Get-AzDataFactoryV2Trigger -ResourceGroupName "rg_ci_cd_new_dev" -DataFactoryName "df-new-dev" -ErrorAction Stop
+            Write-Host "Found $($triggers.Count) triggers"
+  
+            foreach ($trigger in $triggers) {
+              Write-Host "Stopping trigger: $($trigger.Name)"
+              Stop-AzDataFactoryV2Trigger -ResourceGroupName "rg_ci_cd_new_dev" -DataFactoryName "df-new-dev" -Name $trigger.Name -Force
             }
-          shell: pwsh
+          } catch {
+            Write-Host "Error stopping triggers: $_"
+          }
+        shell: pwsh
+
 
 
