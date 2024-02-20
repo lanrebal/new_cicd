@@ -73,27 +73,27 @@ jobs:
 
 
 
-  - name: Stop All Triggers in DEV ADF using Azure CLI
-    run: |
-      # Login to Azure with the Service Principal
-      echo "Logging into Azure..."
-      az login --service-principal --username ${{ secrets.AZURE_CLIENT_ID }} --password ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-      
-      # Define variables
-      RESOURCE_GROUP="rg_ci_cd_new_dev"
-      DATA_FACTORY_NAME="df-new-dev"
-
-      # Fetch and stop all triggers in the data factory
-      echo "Fetching and stopping all triggers in the Data Factory..."
-      triggers=$(az datafactory trigger list --resource-group $RESOURCE_GROUP --factory-name $DATA_FACTORY_NAME --query "[].name" -o tsv)
-      for trigger in $triggers
-      do
-        echo "Stopping trigger: $trigger"
-        az datafactory trigger stop --resource-group $RESOURCE_GROUP --factory-name $DATA_FACTORY_NAME --name $trigger
-      done
-    shell: bash
-    env:
-      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+    - name: Stop All Triggers in DEV ADF using Azure CLI
+      run: |
+        # Login to Azure with the Service Principal
+        echo "Logging into Azure..."
+        az login --service-principal --username ${{ secrets.AZURE_CLIENT_ID }} --password ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
+        
+        # Define variables
+        RESOURCE_GROUP="rg_ci_cd_new_dev"
+        DATA_FACTORY_NAME="df-new-dev"
+  
+        # Fetch and stop all triggers in the data factory
+        echo "Fetching and stopping all triggers in the Data Factory..."
+        triggers=$(az datafactory trigger list --resource-group $RESOURCE_GROUP --factory-name $DATA_FACTORY_NAME --query "[].name" -o tsv)
+        for trigger in $triggers
+        do
+          echo "Stopping trigger: $trigger"
+          az datafactory trigger stop --resource-group $RESOURCE_GROUP --factory-name $DATA_FACTORY_NAME --name $trigger
+        done
+      shell: bash
+      env:
+        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
 
