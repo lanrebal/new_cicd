@@ -10,7 +10,7 @@ app = func.FunctionApp()
                                connection="servicebusfeb23_SERVICEBUS")
 def servicebus_queue_trigger_function(azservicebus: func.ServiceBusMessage) -> None:
     # Parse the message body to get the location
-    location = azservicebus.get_body().decode('utf-8')
+    location = azservicebus.get_body().decode('utf-8').strip()
     logging.info('Python ServiceBus Queue trigger processed a message: %s', location)
 
     # Make the API call to get weather data for the location
@@ -20,12 +20,16 @@ def servicebus_queue_trigger_function(azservicebus: func.ServiceBusMessage) -> N
 
     # Log the response or handle it as needed
     if response.status_code == 200:
-        # Assuming the API returns JSON data
         data = response.json()
-        # You can log the data or perform further processing here
-        logging.info(f"Weather Data for {location}: {json.dumps(data, indent=2)}")
+        
+        # Check if the location matches exactly, ignoring case
+        if data.get('location', {}).get('name', '').lower() == location.lower():
+            logging.info(f"Exact weather data match for {location}: {json.dumps(data, indent=2)}")
+        else:
+            logging.info(f"No exact match found for {location}. Possibly found: {data.get('location', {}).get('name')}")
+            # If you need to perform additional actions for non-matching locations, do it here
     else:
-        error_message = f"Failed to retrieve weather data for {location}"
+        error_message = f"Failed to retrieve weather data for {location} or location not found."
         logging.error(error_message)
 
     # Function returns None to indicate successful processing of the message
