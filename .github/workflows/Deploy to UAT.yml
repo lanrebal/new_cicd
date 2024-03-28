@@ -2,6 +2,14 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'ADFroot/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'ADFroot/**'
+
 
 permissions:
   id-token: write
@@ -55,39 +63,3 @@ jobs:
           additionalParameters: factoryName=df-new-uat ls_db_dev_properties_typeProperties_connectionString_secretName=secret-db-uat ls_kv_dev_properties_typeProperties_baseUrl=https://kv-l-uat.vault.azure.net/ ls_sas_storage_dev_properties_typeProperties_sasUri_secretName=secret-sas-storage-uat
 
 
-
-
-  stop-adf-triggers:
-    needs: deploy-uat
-    runs-on: ubuntu-latest
-    steps:
-      - name: 'Stop ADF triggers in DEV environment'
-        uses: azure/powershell@v1
-        with:
-          inlineScript: |
-            # Connect to Azure using the service principal from GitHub secret
-            $spn = '${{ secrets.CONNECT_TO_DEV }}' | ConvertFrom-Json
-            $password = ConvertTo-SecureString -String $spn.clientSecret -AsPlainText -Force
-            $pscredential = New-Object System.Management.Automation.PSCredential ($spn.clientId, $password)
-            Connect-AzAccount -ServicePrincipal -Credential $pscredential -TenantId $spn.tenantId
-            Set-AzContext -SubscriptionId $spn.subscriptionId
-
-            # Setting Resource Group and Data Factory names
-            $ResourceGroupName = "rg_ci_cd_new_dev" 
-            $DataFactoryName = "df-new-dev"
-
-            # Retrieving and logging the status of triggers
-            $Triggers = Get-AzDataFactoryV2Trigger -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName
-            Write-Host "Number of triggers found: $($Triggers.Count)"
-
-            foreach ($trigger in $Triggers) {
-                Write-Host "Trigger Name: $($trigger.Name), State: $($trigger.Properties.RuntimeState)"
-                if($trigger.Properties.RuntimeState -eq "Started") {
-                    Stop-AzDataFactoryV2Trigger -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName -Name $trigger.Name -Force
-                    Write-Host "Stopped trigger $($trigger.Name)."
-                }
-            }
-          azPSVersion: 'LatestVersion'
-          errorActionPreference: Stop
-          failOnStandardError: false
-          githubToken: ${{ secrets.CONNECT_TO_DEV }}
