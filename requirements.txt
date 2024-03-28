@@ -4,3 +4,5 @@
 
 azure-functions
 requests
+pyodbc
+sqlalchemy
