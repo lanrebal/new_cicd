@@ -42,7 +42,7 @@ def servicebus_queue_trigger_function(azservicebus: func.ServiceBusMessage) -> N
                 query = text("INSERT INTO dbo.weather2 (record_date, datafile_name, data_json) VALUES (:record_date, :datafile_name, :data_json)")
                 session.execute(query, {'record_date': mst_time, 'datafile_name': 'weather', 'data_json': json.dumps(api_response)})
                 session.commit()
-            logging.info("Data successfully written to dbo.weather2_forteeest")
+            logging.info("Data successfully written to dbo.weather2_forteeestl")
         except Exception as e:
             logging.error(f"Error writing to the database: {e}")
     else:
